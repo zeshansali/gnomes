@@ -1,6 +1,5 @@
 # sbt
 bin/
-project/
 target/
 build/
 
@@ -33,3 +32,4 @@ build
 # metals
 .bloop
 .metals
+project/metals.sbt
