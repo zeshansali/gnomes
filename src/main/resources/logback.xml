@@ -1,5 +1,5 @@
 <configuration>
-    <property name="APP_LOG_LEVEL" value="info"/>
+    <property name="APP_LOG_LEVEL" value="ERROR"/>
     <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <jsonGeneratorDecorator class="net.logstash.logback.decorate.PrettyPrintingJsonGeneratorDecorator"/>

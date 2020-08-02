@@ -1,6 +1,13 @@
-version: "3"
+version: "3.8"
 services:
   postgres:
     image: "postgres:latest"
     ports:
       - "5432:5432"
+    volumes:
+      - "./${DB_INIT_SCRIPT_DIR}/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql"
+      - "./${DB_INIT_SCRIPT_DIR}/triggers.sql:/docker-entrypoint-initdb.d/2-triggers.sql"
+      - "./${DB_INIT_SCRIPT_DIR}/data.sql:/docker-entrypoint-initdb.d/3-data.sql"
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: local
