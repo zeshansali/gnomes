@@ -1,4 +1,4 @@
-package com.zsali.gather.user
+package com.zsali.gather.model
 
 import java.{time => jt}
 
