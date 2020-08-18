@@ -14,6 +14,7 @@ object Dependencies {
     http4sClient,
     http4sDsl,
     http4sServer,
+    fs2,
     logbackClassic,
     logstash,
     scalaTest % "test"
@@ -27,6 +28,7 @@ object Versions {
   val circe      = "0.13.0"
   val doobie     = "0.8.8"
   val http4s     = "0.21.4"
+  val fs2        = "2.4.2"
   val logback    = "1.2.3"
   val logstash   = "5.2"
   val scalaTest  = "3.1.1"
@@ -44,6 +46,7 @@ object Library {
   lazy val http4sClient   = "org.http4s"           %% "http4s-blaze-client"      % Versions.http4s
   lazy val http4sDsl      = "org.http4s"           %% "http4s-dsl"               % Versions.http4s
   lazy val http4sServer   = "org.http4s"           %% "http4s-blaze-server"      % Versions.http4s
+  lazy val fs2            = "co.fs2"               %% "fs2-core"                 % Versions.fs2
 
   // logging dependencies
   lazy val logbackClassic = "ch.qos.logback"       %  "logback-classic"          % Versions.logback

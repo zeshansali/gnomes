@@ -18,7 +18,8 @@ import com.zsali.gather.service.{UserService, UserServiceImpl}
 object Main extends IOApp {
   implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
-  val xa = Transactor.fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:local", "postgres", "password")
+  val xa = Transactor
+    .fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:local", "postgres", "password")
   val userRepo: UserRepo = UserRepoImpl(xa)
   val userService: UserService = UserServiceImpl(userRepo)
 

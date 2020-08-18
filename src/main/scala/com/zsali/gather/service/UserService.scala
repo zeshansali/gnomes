@@ -6,7 +6,7 @@ import com.zsali.gather.repository.UserRepo
 
 trait UserService {
   def addUser(user: User): IO[Int]
-  def getUser(id: String): IO[Option[User]]
+  def getUser(id: String): IO[Either[Throwable, Option[User]]]
 }
 
 final case class UserServiceImpl(repo: UserRepo) extends UserService {
