@@ -20,6 +20,7 @@ object Main extends IOApp {
 
   val xa = Transactor
     .fromDriverManager[IO]("org.postgresql.Driver", "jdbc:postgresql:local", "postgres", "password")
+
   val userRepo: UserRepo = UserRepoImpl(xa)
   val userService: UserService = UserServiceImpl(userRepo)
 
@@ -35,4 +36,5 @@ object Main extends IOApp {
       .compile
       .drain
       .as(ExitCode.Success)
+
 }

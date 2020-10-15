@@ -1,6 +1,6 @@
-ThisBuild / scalaVersion     := Versions.scala
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.zsali"
+ThisBuild / scalaVersion := Versions.scala
+ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / organization := "com.zsali"
 ThisBuild / organizationName := "zsali"
 
 resolvers ++= Seq(
