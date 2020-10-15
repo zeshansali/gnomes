@@ -22,11 +22,14 @@ import java.{time => jt}
     1. IOException - unrecoverable
     2. InvariantViolation - unrecoverable
     3. SQLException - some recoverable
- */
+*/
 
+// TODO (Zeshan): refactor these to return ConnectionIO so transactions boundaries
+//                can be established at a higher level
 trait UserRepo {
   def addUser(user: UserReq): IO[Either[Throwable, User]]
   def getUser(id: String): IO[Either[Throwable, Option[User]]]
+  def deleteUser(id: String): IO[Either[Throwable, Int]]
 }
 
 case class UserRepoImpl(xa: Transactor[IO]) extends UserRepo {
@@ -39,14 +42,14 @@ case class UserRepoImpl(xa: Transactor[IO]) extends UserRepo {
       |values (${user.firstName}, ${user.lastName}, ${user.birthday}::date, ${user.email})
       |
        """.stripMargin
-      .update
-      .withUniqueGeneratedKeys[User]("id",
+       .update
+       .withUniqueGeneratedKeys[User]("id",
                                      "first_name",
                                      "last_name",
                                      "birthday",
                                      "email")
-      .transact(xa)
-      .attempt
+       .transact(xa)
+       .attempt
   }
 
   override def getUser(id: String) =
@@ -60,8 +63,20 @@ case class UserRepoImpl(xa: Transactor[IO]) extends UserRepo {
       | where id = ${ju.UUID.fromString(id)}
       |
        """.stripMargin
-      .query[User]
-      .option
-      .transact(xa)
-      .attempt
+       .query[User]
+       .option
+       .transact(xa)
+       .attempt
+  
+  override def deleteUser(id: String) =
+    sql"""
+      |delete
+      |  from users
+      | where id = ${ju.UUID.fromString(id)}
+      |
+       """.stripMargin
+       .update
+       .run
+       .transact(xa)
+       .attempt
 }

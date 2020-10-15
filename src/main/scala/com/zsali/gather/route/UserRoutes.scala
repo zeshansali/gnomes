@@ -33,6 +33,12 @@ object UserRoutes {
           res <- getUserToRes(id, maybeUser)
         } yield res
       }
+      case DELETE -> Root / id => {
+        for {
+          maybeRowsAffected <- userService.deleteUser(id)
+          res <- deleteUserToRes(id, maybeRowsAffected)
+        } yield res
+      }
     }
   }
 
@@ -61,6 +67,26 @@ object UserRoutes {
           case _ => {
             logger.debug("User not found", Map("id" -> id))
             NotFound("User doesn't exist")
+          }
+        }
+    }
+  }
+
+  private def deleteUserToRes(id: String, maybeRowsAffected: Either[Throwable, Int]): IO[Response[IO]] = {
+    maybeRowsAffected match {
+      case Left(e) => {
+        logger.error(s"Database might be down --> ${e.getMessage}")
+        InternalServerError()
+      }
+      case Right(rowsAffected) =>
+        rowsAffected match {
+          case 0 => {
+            logger.debug("User not found so cannot be deleted", Map("id" -> id))
+            NotFound("User doesn't exist")
+          }
+          case _ => {
+            logger.debug("User deleted", Map("id" -> id))
+            NoContent()
           }
         }
     }
