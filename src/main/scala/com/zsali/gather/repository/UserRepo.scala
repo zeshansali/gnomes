@@ -27,14 +27,14 @@ import java.{time => jt}
 // TODO (Zeshan): refactor these to return ConnectionIO so transactions boundaries
 //                can be established at a higher level
 trait UserRepo {
-  def addUser(user: UserReq): IO[Either[Throwable, User]]
+  def createUser(user: UserReq): IO[Either[Throwable, User]]
   def getUser(id: String): IO[Either[Throwable, Option[User]]]
   def deleteUser(id: String): IO[Either[Throwable, Int]]
 }
 
 case class UserRepoImpl(xa: Transactor[IO]) extends UserRepo {
 
-  override def addUser(user: UserReq) = {
+  override def createUser(user: UserReq) = {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
     val date = jt.LocalDate.parse(user.birthday, formatter)
     sql"""

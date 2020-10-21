@@ -18,77 +18,71 @@ object UserRoutes {
   // move this elsewhere, replace with log4cats at some point
   val logger = JsonLogger()
 
-  def get(userService: UserService): HttpRoutes[IO] = {
+  def get(userService: UserService): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
-      case req @ POST -> Root / add => {
+      case req @ POST -> Root / create =>
         for {
           userReq <- req.as[UserReq]
-          maybeUser <- userService.addUser(userReq)
-          res <- addUserToRes(maybeUser)
+          errorOrUser <- userService.createUser(userReq)
+          res <- createUserToRes(errorOrUser)
         } yield res
-      }
-      case GET -> Root / id => {
+      case GET -> Root / id =>
         for {
-          maybeUser <- userService.getUser(id)
-          res <- getUserToRes(id, maybeUser)
+          errorOrUser <- userService.getUser(id)
+          res <- getUserToRes(id, errorOrUser)
         } yield res
-      }
-      case DELETE -> Root / id => {
+      case DELETE -> Root / id =>
         for {
-          maybeRowsAffected <- userService.deleteUser(id)
-          res <- deleteUserToRes(id, maybeRowsAffected)
+          errorOrRowsAffected <- userService.deleteUser(id)
+          res <- deleteUserToRes(id, errorOrRowsAffected)
         } yield res
-      }
     }
-  }
 
-  private def addUserToRes(user: Either[Throwable, User]): IO[Response[IO]] = {
-    user match {
+  private def createUserToRes(errorOrUser: Either[Throwable, User]
+                             ): IO[Response[IO]] =
+    errorOrUser match {
       case Left(e) => {
-        logger.error(s"SOME ERROR --> ${e.getMessage()}")
+        logger.error(s"Repo layer error --> ${e.getMessage()}")
         InternalServerError()
       }
       case Right(user) => Created(user.asJson)
     }
-  }
 
-  private def getUserToRes(id: String, user: Either[Throwable, Option[User]]): IO[Response[IO]] = {
-    user match {
+  private def getUserToRes(id: String,
+                           errorOrUser: Either[Throwable, Option[User]]
+                          ): IO[Response[IO]] =
+    errorOrUser match {
       case Left(e) => {
-        logger.error(s"Database might be down --> ${e.getMessage}")
+        logger.error(s"Repo layer error --> ${e.getMessage}")
         InternalServerError()
       }
-      case Right(maybeUser) =>
-        maybeUser match {
-          case Some(user) => {
-            logger.debug("User found", Map("id" -> id))
-            Ok(user.asJson)
-          }
-          case _ => {
-            logger.debug("User not found", Map("id" -> id))
-            NotFound("User doesn't exist")
-          }
+      case Right(maybeUser) => maybeUser match {
+        case None => {
+          logger.debug("User not found", Map("id" -> id))
+          NotFound("User doesn't exist")
         }
+        case Some(user) => {
+          logger.debug("User found", Map("id" -> id))
+          Ok(user.asJson)
+        }
+      }
     }
-  }
 
-  private def deleteUserToRes(id: String, maybeRowsAffected: Either[Throwable, Int]): IO[Response[IO]] = {
-    maybeRowsAffected match {
+  private def deleteUserToRes(id: String,
+                              errorOrRowsAffected: Either[Throwable, Int]
+                             ): IO[Response[IO]] =
+    errorOrRowsAffected match {
       case Left(e) => {
-        logger.error(s"Database might be down --> ${e.getMessage}")
+        logger.error(s"Repo layer error --> ${e.getMessage}")
         InternalServerError()
       }
-      case Right(rowsAffected) =>
-        rowsAffected match {
-          case 0 => {
-            logger.debug("User not found so cannot be deleted", Map("id" -> id))
-            NotFound("User doesn't exist")
-          }
-          case _ => {
-            logger.debug("User deleted", Map("id" -> id))
-            NoContent()
-          }
-        }
+      case Right(rowsAffected) if (rowsAffected == 0) => {
+        logger.debug("User not found so cannot be deleted", Map("id" -> id))
+        NotFound("User doesn't exist")
+      }
+      case _ => {
+        logger.debug("User deleted", Map("id" -> id))
+        NoContent()
+      }
     }
-  }
 }

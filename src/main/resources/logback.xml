@@ -45,7 +45,7 @@
         </encoder>
     </appender>
 
-    <!-- <logger name="org.http4s" level="INFO"/> -->
+    <logger name="org.http4s" level="INFO"/>
 
     <root level="{APP_LOG_LEVEL}">
         <appender-ref ref="jsonConsoleAppender"/>
