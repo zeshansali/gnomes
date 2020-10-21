@@ -45,7 +45,10 @@ object UserRoutes {
         logger.error(s"Repo layer error --> ${e.getMessage()}")
         InternalServerError()
       }
-      case Right(user) => Created(user.asJson)
+      case Right(user) => {
+        logger.debug("User created", Map("id" -> id))
+        Created(user.asJson)
+      }
     }
 
   private def getUserToRes(id: String,
