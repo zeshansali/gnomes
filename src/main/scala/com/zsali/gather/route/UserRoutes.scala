@@ -46,25 +46,25 @@ object UserRoutes {
 
   private def createUserToRes(errorOrUser: Either[Throwable, User]): IO[Response[IO]] =
     errorOrUser match {
-      case Left(e) => {
-        logger.error(s"Repo layer error --> ${e.getMessage()}")
-        InternalServerError()
-      }
       case Right(user) => {
         logger.debug("User created", Map("id" -> user.id))
         Created(user.asJson)
+      }
+      case Left(e) => {
+        logger.error(s"Repo layer error --> ${e.getMessage()}")
+        InternalServerError()
       }
     }
 
   private def updateUserToRes(errorOrUser: Either[Throwable, User]): IO[Response[IO]] =
     errorOrUser match {
-      case Left(e) => {
-        logger.error(s"Repo layer error --> ${e.getMessage()}")
-        InternalServerError()
-      }
       case Right(user) => {
         logger.debug("User updated", Map("id" -> user.id))
         Ok(user.asJson)
+      }
+      case Left(e) => {
+        logger.error(s"Repo layer error --> ${e.getMessage()}")
+        InternalServerError()
       }
     }
 
@@ -72,19 +72,17 @@ object UserRoutes {
                            errorOrUser: Either[Throwable, Option[User]]
                           ): IO[Response[IO]] =
     errorOrUser match {
+      case Right(Some(user)) => {
+        logger.debug("User found", Map("id" -> id))
+        Ok(user.asJson)
+      }
       case Left(e) => {
         logger.error(s"Repo layer error --> ${e.getMessage}")
         InternalServerError()
       }
-      case Right(maybeUser) => maybeUser match {
-        case None => {
-          logger.debug("User not found", Map("id" -> id))
-          NotFound("User doesn't exist")
-        }
-        case Some(user) => {
-          logger.debug("User found", Map("id" -> id))
-          Ok(user.asJson)
-        }
+      case _ => {
+        logger.debug("User not found", Map("id" -> id))
+        NotFound("User doesn't exist")
       }
     }
 
@@ -92,17 +90,17 @@ object UserRoutes {
                               errorOrRowsAffected: Either[Throwable, Int]
                              ): IO[Response[IO]] =
     errorOrRowsAffected match {
+      case Right(1) => {
+        logger.debug("User deleted", Map("id" -> id))
+        NoContent()
+      }
       case Left(e) => {
         logger.error(s"Repo layer error --> ${e.getMessage}")
         InternalServerError()
       }
-      case Right(rowsAffected) if (rowsAffected == 0) => {
+      case _ => {
         logger.debug("User not found so cannot be deleted", Map("id" -> id))
         NotFound("User doesn't exist")
-      }
-      case _ => {
-        logger.debug("User deleted", Map("id" -> id))
-        NoContent()
       }
     }
 }
