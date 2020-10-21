@@ -28,7 +28,7 @@ import java.{time => jt}
 //                can be established at a higher level
 trait UserRepo {
   def createUser(user: UserReq): IO[Either[Throwable, User]]
-  def updateUser(id: String, user: UserReq): IO[Either[Throwable, User]]
+  def updateUser(id: String, user: UserReq): IO[Either[Throwable, Option[User]]]
   def getUser(id: String): IO[Either[Throwable, Option[User]]]
   def deleteUser(id: String): IO[Either[Throwable, Int]]
 }
@@ -57,20 +57,16 @@ case class UserRepoImpl(xa: Transactor[IO]) extends UserRepo {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-d")
     val date = jt.LocalDate.parse(user.birthday, formatter)
     sql"""
-      |update users
-      |   set first_name = ${user.firstName},
-      |       last_name = ${user.lastName},
-      |       birthday = ${user.birthday}::date,
-      |       email = ${user.email}
-      | where id = ${ju.UUID.fromString(id)}
-      |
+      |   update users
+      |      set first_name = ${user.firstName},
+      |          last_name = ${user.lastName},
+      |          birthday = ${user.birthday}::date,
+      |          email = ${user.email}
+      |    where id = ${ju.UUID.fromString(id)}
+      |returning *
        """.stripMargin
-       .update
-       .withUniqueGeneratedKeys[User]("id",
-                                     "first_name",
-                                     "last_name",
-                                     "birthday",
-                                     "email")
+       .query[User]
+       .option
        .transact(xa)
        .attempt
   }

@@ -6,7 +6,7 @@ import com.zsali.gather.repository.UserRepo
 
 trait UserService {
   def createUser(user: UserReq): IO[Either[Throwable, User]]
-  def updateUser(id: String, user: UserReq): IO[Either[Throwable, User]]
+  def updateUser(id: String, user: UserReq): IO[Either[Throwable, Option[User]]]
   def getUser(id: String): IO[Either[Throwable, Option[User]]]
   def deleteUser(id: String): IO[Either[Throwable, Int]]
 }

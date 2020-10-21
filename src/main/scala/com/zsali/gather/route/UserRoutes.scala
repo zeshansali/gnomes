@@ -30,7 +30,7 @@ object UserRoutes {
         for {
           userReq <- req.as[UserReq]
           errorOrUser <- userService.updateUser(id, userReq)
-          res <- updateUserToRes(errorOrUser)
+          res <- updateUserToRes(id, errorOrUser)
         } yield res
       case GET -> Root / id =>
         for {
@@ -56,15 +56,21 @@ object UserRoutes {
       }
     }
 
-  private def updateUserToRes(errorOrUser: Either[Throwable, User]): IO[Response[IO]] =
+  private def updateUserToRes(id: String,
+                              errorOrUser: Either[Throwable, Option[User]]
+                             ): IO[Response[IO]] =
     errorOrUser match {
-      case Right(user) => {
+      case Right(Some(user)) => {
         logger.debug("User updated", Map("id" -> user.id))
         Ok(user.asJson)
       }
       case Left(e) => {
         logger.error(s"Repo layer error --> ${e.getMessage()}")
         InternalServerError()
+      }
+      case _ => {
+        logger.debug("User not found so cannot be updated", Map("id" -> id))
+        NotFound("User doesn't exist")
       }
     }
 
