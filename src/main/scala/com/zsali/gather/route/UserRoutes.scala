@@ -26,6 +26,12 @@ object UserRoutes {
           errorOrUser <- userService.createUser(userReq)
           res <- createUserToRes(errorOrUser)
         } yield res
+      case req @ PUT -> Root / update / id =>
+        for {
+          userReq <- req.as[UserReq]
+          errorOrUser <- userService.updateUser(id, userReq)
+          res <- updateUserToRes(errorOrUser)
+        } yield res
       case GET -> Root / id =>
         for {
           errorOrUser <- userService.getUser(id)
@@ -38,16 +44,27 @@ object UserRoutes {
         } yield res
     }
 
-  private def createUserToRes(errorOrUser: Either[Throwable, User]
-                             ): IO[Response[IO]] =
+  private def createUserToRes(errorOrUser: Either[Throwable, User]): IO[Response[IO]] =
     errorOrUser match {
       case Left(e) => {
         logger.error(s"Repo layer error --> ${e.getMessage()}")
         InternalServerError()
       }
       case Right(user) => {
-        logger.debug("User created", Map("id" -> id))
+        logger.debug("User created", Map("id" -> user.id))
         Created(user.asJson)
+      }
+    }
+
+  private def updateUserToRes(errorOrUser: Either[Throwable, User]): IO[Response[IO]] =
+    errorOrUser match {
+      case Left(e) => {
+        logger.error(s"Repo layer error --> ${e.getMessage()}")
+        InternalServerError()
+      }
+      case Right(user) => {
+        logger.debug("User updated", Map("id" -> user.id))
+        Ok(user.asJson)
       }
     }
 
